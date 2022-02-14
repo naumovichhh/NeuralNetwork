@@ -11,17 +11,23 @@ namespace Lab4
         private const double errorThreshold = 0.05;
         private Neuron[][] neurons;
         private double[][] deltas;
+        private double[][] inputs;
         private double error;
 
         public NeuralNetwork(Neuron[][] neurons)
         {
             this.neurons = neurons;
             deltas = new double[neurons.Length][];
+            inputs = new double[neurons.Length][];
             for (int i = 0; i < deltas.Length; ++i)
             {
                 deltas[i] = new double[neurons[i].Length];
+                inputs[i] = new double[neurons[i].Length];
             }
         }
+
+        public static Func<double, double> FActivation { get; } = x => 1 / (1 + Math.Exp(-x));
+        public static Func<double, double> FActivationDerivative { get; } = x => Math.Exp(-x) / Math.Pow((1 + Math.Exp(-x)), 2);
 
         public void Learn(Tuple<double[], double[]>[] trainingObjects)
         {
@@ -46,30 +52,42 @@ namespace Lab4
 
         private double[][] GetDeltas(double[] expectedResults, double[] results)
         {
-            double[][] result = new double[neurons.Length][];
+            double[][] deltas = new double[neurons.Length][];
             for (int i = 0; i < neurons.Length; i++)
             {
-                result[i] = new double[neurons[i].Length];
+                deltas[i] = new double[neurons[i].Length];
             }
 
-            for (int i = 0; i < result[0].Length; ++i)
+            var lastLayerIndex = deltas.Length - 1;
+            for (int i = 0; i < deltas[lastLayerIndex].Length; ++i)
             {
-                result[0][i] = (expectedResults[i] - results[i])
+                deltas[lastLayerIndex][i] = (expectedResults[i] - results[i]) * FActivationDerivative(inputs[lastLayerIndex][i]);
+            }
+
+            for (int i = lastLayerIndex - 1; i >= 0; --i)
+            {
+                for (int j = 0; j < deltas[i].Length; ++j)
+                {
+                    deltas[i][j] = 
+                }
             }
         }
 
         private double[] GetOutput(double[] networkInput)
         {
             double[] layerInput = networkInput;
+            int j = 0;
             foreach (var layer in neurons)
             {
                 var layerOutput = new double[layer.Length];
                 for (int i = 0; i < layer.Length; ++i)
                 {
-                    layerOutput[i] = layer[i].GetOutput(layerInput);
+                    inputs[j][i] = layer[i].GetInput(layerInput);
+                    layerOutput[i] = layer[i].GetOutput(inputs[j][i]);
                 }
 
                 layerInput = layerOutput;
+                ++j;
             }
 
             return layerInput;
@@ -78,22 +96,16 @@ namespace Lab4
 
     internal class Neuron
     {
-        private Func<double, double> fActivation;
-        public Neuron()
-        {
-            fActivation = x => 1 / (1 + Math.Exp(-x));
-        }
-
-        public Neuron(Func<double, double> fActivation)
-        {
-            this.fActivation = fActivation;
-        }
-
         public double[] Weights { get; set; }
 
-        public double GetOutput(double[] input)
+        public double GetInput(double[] input)
         {
-            return fActivation(input.Select((e, i) => e * Weights[i]).Sum());
+            return input.Select((e, i) => e * Weights[i]).Sum();
+        }
+
+        public double GetOutput(double input)
+        {
+            return NeuralNetwork.FActivation(input);
         }
     }
 }
