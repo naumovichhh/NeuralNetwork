@@ -54,7 +54,7 @@ namespace Lab4
 
             for (int i = 0; i < result[0].Length; ++i)
             {
-                result[0][i] = 
+                result[0][i] = (expectedResults[i] - results[i])
             }
         }
 
