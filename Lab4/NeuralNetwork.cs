@@ -9,9 +9,12 @@ namespace Lab4
     internal class NeuralNetwork
     {
         private const double errorThreshold = 0.05;
+        private const double learningRate = 0.6;
+        private const double momentum = 0.5;
         private Neuron[][] neurons;
         private double[][] deltas;
         private double[][] inputs;
+        private double[][] prevLayerOutputs;
         private double error;
 
         public NeuralNetwork(Neuron[][] neurons)
@@ -39,6 +42,7 @@ namespace Lab4
                 {
                     errors.Add(ProcessIteration(trainingObjects[i]));
                 }
+                error = errors.Sum() / errors.Count;
             } while (error > errorThreshold);
         }
 
@@ -47,7 +51,27 @@ namespace Lab4
             double[] xs = trainingObject.Item1;
             double[] expectedResults = trainingObject.Item2;
             double[] results = GetOutput(xs);
+            deltas = GetDeltas(expectedResults, results);
+            ApplyWeightsChange();
+            var error = expectedResults.Select((e, i) => Math.Pow(e - results[i], 2)).Sum() / results.Length;
+            return error;
+        }
 
+        private void ApplyWeightsChange()
+        {
+            for (int i = 0; i < neurons.Length; ++i)
+            {
+                for (int j = 0; j < neurons[i].Length; ++j)
+                {
+                    for (int k = 0; k < neurons[i][j].Weights.Length; ++k)
+                    {
+                        var gradient = deltas[i][j] * prevLayerOutputs[i][k];
+                        var weightChange = learningRate * gradient + momentum * neurons[i][j].WeightsChanges[k];
+                        neurons[i][j].Weights[k] += weightChange;
+                        neurons[i][j].WeightsChanges[k] = weightChange;
+                    }
+                }
+            }
         }
 
         private double[][] GetDeltas(double[] expectedResults, double[] results)
@@ -68,9 +92,11 @@ namespace Lab4
             {
                 for (int j = 0; j < deltas[i].Length; ++j)
                 {
-                    deltas[i][j] = 
+                    deltas[i][j] = deltas[i + 1].Select((d, k) => d * neurons[i + 1][k].Weights[j]).Sum() * FActivationDerivative(inputs[i][j]);
                 }
             }
+
+            return deltas;
         }
 
         private double[] GetOutput(double[] networkInput)
@@ -80,6 +106,7 @@ namespace Lab4
             foreach (var layer in neurons)
             {
                 var layerOutput = new double[layer.Length];
+                prevLayerOutputs[j] = layerInput;
                 for (int i = 0; i < layer.Length; ++i)
                 {
                     inputs[j][i] = layer[i].GetInput(layerInput);
@@ -97,6 +124,13 @@ namespace Lab4
     internal class Neuron
     {
         public double[] Weights { get; set; }
+        public double[] WeightsChanges { get; set; }
+
+        public Neuron(double[] weights)
+        {
+            Weights = weights;
+            WeightsChanges = new double[Weights.Length];
+        }
 
         public double GetInput(double[] input)
         {
