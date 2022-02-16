@@ -8,7 +8,7 @@ namespace Lab4
 {
     internal class NeuralNetwork
     {
-        private const double errorThreshold = 0.05;
+        private const double errorThreshold = 0.003;
         private const double learningRate = 0.6;
         private const double momentum = 0.5;
         private Neuron[][] neurons;
@@ -22,10 +22,12 @@ namespace Lab4
             this.neurons = neurons;
             deltas = new double[neurons.Length][];
             inputs = new double[neurons.Length][];
+            prevLayerOutputs = new double[neurons.Length][];
             for (int i = 0; i < deltas.Length; ++i)
             {
                 deltas[i] = new double[neurons[i].Length];
                 inputs[i] = new double[neurons[i].Length];
+                prevLayerOutputs[i] = new double[neurons[i][0].Weights.Length];
             }
         }
 
