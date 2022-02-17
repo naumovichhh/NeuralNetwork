@@ -125,23 +125,65 @@ namespace Lab4
 
     internal class Neuron
     {
-        public double[] Weights { get; set; }
-        public double[] WeightsChanges { get; set; }
-
         public Neuron(double[] weights)
         {
             Weights = weights;
             WeightsChanges = new double[Weights.Length];
         }
 
-        public double GetInput(double[] input)
+        public virtual double[] Weights { get; set; }
+        public virtual double[] WeightsChanges { get; set; }
+
+        public virtual double GetInput(double[] input)
         {
             return input.Select((e, i) => e * Weights[i]).Sum();
         }
 
-        public double GetOutput(double input)
+        public virtual double GetOutput(double input)
         {
             return NeuralNetwork.FActivation(input);
+        }
+    }
+
+    internal class BiasNeuron : Neuron
+    {
+        private int weightsLength;
+        private int weightsChangesLength;
+
+        public BiasNeuron(int n) : base(null)
+        {
+            weightsLength = n;
+            weightsChangesLength = n;
+        }
+
+        public override double[] Weights
+        {
+            get
+            {
+                return new double[weightsLength];
+            }
+            set
+            { }
+        }
+
+        public override double[] WeightsChanges
+        {
+            get
+            {
+                return new double[weightsChangesLength];
+            }
+            set
+            { }
+        }
+
+        public override double GetInput(double[] input)
+        {
+            return 0;
+        }
+
+        public override double GetOutput(double input)
+        {
+            return 1;
         }
     }
 }

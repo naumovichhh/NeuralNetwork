@@ -34,17 +34,18 @@ namespace Lab4
                     new Neuron(new double[] { 0.5, -0.5, 0.5 }),
                     new Neuron(new double[] { 0.5, 0.5, -1 })
                 },
-                new Neuron[2] {
+                new Neuron[3] {
                     new Neuron(new double[] { 1, -1, -1, 1}),
-                    new Neuron(new double[] { -1, 1, 1, -1})
+                    new Neuron(new double[] { -1, 1, 1, -1}),
+                    new BiasNeuron(4)
                 }
             };
             var neuralNetwork = new NeuralNetwork(neurons);
             var trainingObjects = new Tuple<double[], double[]>[] {
-                new Tuple<double[], double[]>(new double[] { 0, 0, 1 }, new double[] { 1, 0 }),
-                new Tuple<double[], double[]>(new double[] { 0, 1, 1 }, new double[] { 0, 1 }),
-                new Tuple<double[], double[]>(new double[] { 1, 0, 1 }, new double[] { 0, 1 }),
-                new Tuple<double[], double[]>(new double[] { 1, 1, 1 }, new double[] { 1, 0 }),
+                new Tuple<double[], double[]>(new double[] { 0, 0, 1 }, new double[] { 1, 0, 0.97 }),
+                new Tuple<double[], double[]>(new double[] { 0, 1, 1 }, new double[] { 0, 1, 0.97 }),
+                new Tuple<double[], double[]>(new double[] { 1, 0, 1 }, new double[] { 0, 1, 0.98 }),
+                new Tuple<double[], double[]>(new double[] { 1, 1, 1 }, new double[] { 1, 0, 0.98 }),
             };
             neuralNetwork.Learn(trainingObjects);
         }
